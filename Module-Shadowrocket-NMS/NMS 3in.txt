@@ -2,7 +2,6 @@
 #!name=Locket Filter - DINH TUAN HAKAIZ
 #!desc=3 IN 1 | YouTube + Locket Gold + Spotify
 #!author=DINH TUAN HAKAIZ
-# 💬 Discord: https://discord.gg/juY9tw5AJY
 # 🚀 Maintained by: DINH TUAN HAKAIZ
 
 #!name=Locket Gold VIP
