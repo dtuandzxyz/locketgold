@@ -141,7 +141,7 @@ Object.assign(obj.entries, {
             {
                 title: "DINH TUAN HAKAIZ ✨",
                     body: "Nhớ Follow Kênh Ủng Hộ DINH TUAN HAKAIZ 💛",
-                    imageURL: "https://i.postimg.cc/15BPkqNN/173376ce-0cb2-411c-80db-fe9adc931718.png"
+                    imageURL: "https://i.postimg.cc/28KDzs8v/1794143383679-356538179217509667-6842916276097553191-52739d55250146b74b0b2ac3e1019b15.jpg"
             }
         ],
         primary_button_title: "Xong",
