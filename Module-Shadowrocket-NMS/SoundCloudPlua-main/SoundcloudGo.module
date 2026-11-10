@@ -1,0 +1,12 @@
+#!name=SoundCloud Go+ - DINH TUAN HAKAIZ
+#!desc=Unlock SoundCloud Go+ | DINH TUAN HAKAIZ
+#!author=DINH TUAN HAKAIZ
+#!discord=https://discord.gg/juY9tw5AJY
+
+[Script]
+# SoundCloud Go+
+#hostname = api-mobile.soundcloud.com
+SoundCloudGoPlus = type=http-response,pattern=^https:\/\/api-mobile\.soundcloud\.com\/configuration\/ios$,requires-body=1,script-path=https://raw.githubusercontent.com/dtuandzxyz/locketgold/main/Module-Shadowrocket-NMS/SoundCloudPlua-main/sc.js
+
+[MITM]
+hostname = %APPEND% api-mobile.soundcloud.com
