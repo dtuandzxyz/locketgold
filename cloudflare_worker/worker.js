@@ -4,7 +4,7 @@
  * Domain: locket-gold.iamdinhtuan-info.workers.dev
  */
 
-// 1x1 Transparent PNG Base64 Fallback (Tránh lỗi kết nối / 404 khi Locket tải sticker/khung ảnh)
+// 1x1 Transparent PNG Fallback (Chống lỗi mạng / 404 khi Locket tải sticker/khung ảnh)
 const TRANSPARENT_PNG = Uint8Array.from(atob("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="), c => c.charCodeAt(0));
 
 // Danh sách VIP Users mặc định
@@ -12,9 +12,7 @@ const DEFAULT_VIP_USERS = [
   "dinhtuanhakaiz",
   "dinh_tuan",
   "iamdinhtuan-info",
-  "user.2karr7",
-  "mhhiep",
-  "nightmarketserver"
+  "user.2karr7"
 ];
 
 export default {
@@ -22,7 +20,6 @@ export default {
     const url = new URL(request.url);
     const pathname = url.pathname;
 
-    // Headers CORS mặc định
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -33,7 +30,32 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
-    // 1. API: Danh sách VIP Users
+    // 1. Phục vụ file Script JS cho Shadowrocket (Chuyển tiếp trực tiếp từ GitHub của DINH TUAN HAKAIZ)
+    if (pathname.startsWith("/js/")) {
+      let filename = pathname.replace("/js/", "").split("?")[0];
+      if (filename === "deleteHeader.js") filename = "deleteHeader_RC.js";
+      if (filename === "Locket_Unlocked.js") filename = "locketfix.js";
+      if (filename === "Locket_Photobooth.js") filename = "locket_pb_req.js";
+      if (filename === "locket_filter_unlock.js") filename = "locket_filter_resp.js";
+      if (filename === "Locket_minhhiep08.js") filename = "evenuecat.js";
+
+      try {
+        const githubUrl = `https://raw.githubusercontent.com/dtuandzxyz/locketgold/main/js/${filename}`;
+        const ghRes = await fetch(githubUrl);
+        if (ghRes.ok) {
+          const jsCode = await ghRes.text();
+          return new Response(jsCode, {
+            headers: {
+              ...corsHeaders,
+              "Content-Type": "application/javascript; charset=utf-8",
+              "Cache-Control": "public, max-age=60"
+            }
+          });
+        }
+      } catch (err) {}
+    }
+
+    // 2. API: Danh sách VIP Users
     if (pathname === "/api/vip-users") {
       let vipList = DEFAULT_VIP_USERS;
       if (env.VIP_KV) {
@@ -47,7 +69,7 @@ export default {
       });
     }
 
-    // 2. API: Đăng ký UID / Username VIP tự động
+    // 3. API: Đăng ký UID / Username VIP tự động
     if (pathname === "/api/register-vip") {
       const uid = url.searchParams.get("uid");
       const username = url.searchParams.get("username");
@@ -65,7 +87,7 @@ export default {
       });
     }
 
-    // 3. API: Mock bộ lọc AI & Photobooth (Bypass lỗi 422 "Không thể áp dụng bộ lọc")
+    // 4. API: Mock bộ lọc AI & Photobooth (Chống lỗi 422 "Không thể áp dụng bộ lọc")
     if (pathname === "/generateFilteredImage") {
       return new Response(JSON.stringify({
         status: 200,
@@ -81,8 +103,7 @@ export default {
       });
     }
 
-    // 4. Phục vụ tài nguyên ảnh Assets (/assets/frames/..., /assets/stickers/...)
-    // Trả về PNG hợp lệ để app Locket không bị lỗi kết nối hoặc văng ảnh
+    // 5. Trả về ảnh Assets (/assets/frames/..., /assets/stickers/...)
     if (pathname.startsWith("/assets/")) {
       return new Response(TRANSPARENT_PNG, {
         headers: {
@@ -93,11 +114,11 @@ export default {
       });
     }
 
-    // 5. Root page thông báo hoạt động
+    // 6. Trang chủ xác nhận Worker hoạt động
     return new Response(JSON.stringify({
       service: "Locket Gold VIP Server",
       author: "DINH TUAN HAKAIZ",
-      status: "running",
+      status: "online",
       domain: "locket-gold.iamdinhtuan-info.workers.dev"
     }, null, 2), {
       headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" }
