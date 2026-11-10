@@ -1,0 +1,69 @@
+
+#!name=Locket Filter - DINH TUAN HAKAIZ
+#!desc=3 IN 1 | YouTube + Locket Gold + Spotify
+#!author=DINH TUAN HAKAIZ
+# 🚀 Maintained by: DINH TUAN HAKAIZ
+
+#!name=Locket Gold VIP
+#!desc=Locket Gold - Chống Cache 304, kích hoạt quyền thuê bao, Photobooth, huy hiệu Profile và mạng lưới bạn bè VIP.
+#!author=DINH TUAN HAKAIZ
+#!icon=https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Locket.png
+#!system=ios
+
+[Rule]
+# Chặn QUIC/UDP cho Locket
+AND,((DOMAIN,firebaseremoteconfig.googleapis.com),(PROTOCOL,UDP)),REJECT
+AND,((DOMAIN,api.revenuecat.com),(PROTOCOL,UDP)),REJECT
+AND,((DOMAIN,api.locketcamera.com),(PROTOCOL,UDP)),REJECT
+AND,((DOMAIN-SUFFIX,locketcamera.com),(PROTOCOL,UDP)),REJECT
+
+# Chặn Sentry
+DOMAIN-SUFFIX,sentry.io,REJECT
+DOMAIN-SUFFIX,ingest.sentry.io,REJECT
+
+[Header Rewrite]
+# Xóa Cache / ETag trên RevenueCat
+^https?:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers) header-del x-revenuecat-etag
+^https?:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers) header-del X-RevenueCat-ETag
+^https?:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers) header-del if-none-match
+^https?:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers) header-del If-None-Match
+^https?:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers) header-del if-modified-since
+^https?:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers) header-del If-Modified-Since
+
+# Xóa Cache / ETag trên Firebase Remote Config
+^https?:\/\/firebaseremoteconfig\.googleapis\.com\/.+ header-del if-none-match
+^https?:\/\/firebaseremoteconfig\.googleapis\.com\/.+ header-del If-None-Match
+^https?:\/\/firebaseremoteconfig\.googleapis\.com\/.+ header-del if-modified-since
+^https?:\/\/firebaseremoteconfig\.googleapis\.com\/.+ header-del If-Modified-Since
+^https?:\/\/firebaseremoteconfig\.googleapis\.com\/.+ header-del x-goog-if-none-match
+
+# Xóa Cache / ETag trên Locket Camera API
+^https?:\/\/api\.locketcamera\.com\/.+ header-del if-none-match
+^https?:\/\/api\.locketcamera\.com\/.+ header-del If-None-Match
+^https?:\/\/api\.locketcamera\.com\/.+ header-del if-modified-since
+^https?:\/\/api\.locketcamera\.com\/.+ header-del If-Modified-Since
+
+[Script]
+# Locket Gold - Xóa Header RevenueCat và Firebase
+deleteHeader_RC = type=http-request,pattern=^https?:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers),script-path=https://raw.githubusercontent.com/dtuandzxyz/locketgold/main/js/deleteHeader_RC.js,timeout=60
+
+deleteHeader_Firebase = type=http-request,pattern=^https?:\/\/firebaseremoteconfig\.googleapis\.com\/.+,script-path=https://raw.githubusercontent.com/dtuandzxyz/locketgold/main/js/deleteHeader_Firebase.js,timeout=60
+
+# Locket Gold - Kích hoạt quyền thuê bao và tính năng 45s
+revenuecat = type=http-response,pattern=^https?:\/\/api\.revenuecat\.com\/.+\/(receipts|subscribers),script-path=https://raw.githubusercontent.com/dtuandzxyz/locketgold/main/js/evenuecat.js,requires-body=true,max-size=-1,timeout=60
+
+locket_rc = type=http-response,pattern=^https?:\/\/firebaseremoteconfig\.googleapis\.com\/.+,script-path=https://raw.githubusercontent.com/dtuandzxyz/locketgold/main/js/locketfix.js,requires-body=true,max-size=-1,timeout=60
+
+# Locket Photobooth Engine
+locket_pb_req = type=http-request,pattern=^https?:\/\/(us-central1-locket-4252a\.cloudfunctions\.net|api\.locketcamera\.com)\/generateFilteredImage,script-path=https://raw.githubusercontent.com/dtuandzxyz/locketgold/main/js/locket_pb_req.js,requires-body=true,max-size=-1,timeout=60
+
+# Locket Huy hiệu Profile và Mạng lưới bạn bè VIP
+locket_change_profile = type=http-request,pattern=^https:\/\/api\.locketcamera\.com\/changeProfileInfo,script-path=https://raw.githubusercontent.com/dtuandzxyz/locketgold/main/js/locket_change_profile.js,timeout=60
+
+locket_filter_resp = type=http-response,pattern=^https?:\/\/api\.locketcamera\.com\/.+,requires-body=true,max-size=-1,script-path=https://raw.githubusercontent.com/dtuandzxyz/locketgold/main/js/locket_filter_resp.js,timeout=60
+
+[Host]
+firebaseremoteconfigrealtime.googleapis.com = 0.0.0.0
+
+[MITM]
+hostname = %APPEND% api.revenuecat.com, firebaseremoteconfig.googleapis.com, api.locketcamera.com, *.locketcamera.com, us-central1-locket-4252a.cloudfunctions.net
